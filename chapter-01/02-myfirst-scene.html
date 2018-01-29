@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>First Scene of fn ln</title>
+    <script type="text/javascript" src="../../libs/three.js"></script>
+    <style>
+        body {
+            /* set margin to 0 and overflow to hidden, to
+             use the complete page */
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Div which will hold the Output -->
+<div id="WebGL-output">
+</div>
+
+<!-- Javascript code that runs our Three.js examples -->
+<script type="text/javascript">
+
+    // once everything is loaded, we run our Three.js stuff.
+    function init() {
+        // here we'll put the Three.js stuff
+		//console.log("Hi there!");
+		
+		var scene=new THREE.Scene();
+		//scene2=new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+		
+		var axes = new THREE.AxisHelper(20);
+        scene.add(axes);
+		
+		        // create a render and set the size
+        var renderer = new THREE.WebGLRenderer();
+        renderer.setClearColorHex();
+        renderer.setClearColor(new THREE.Color(0xEEEEEE));
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // add the output of the renderer to the html element
+        document.getElementById("WebGL-output").appendChild(renderer.domElement);
+
+		
+		
+		        // position and point the camera to the center of the scene
+        camera.position.x = -30;
+        camera.position.y = 40;
+        camera.position.z = 30;
+        camera.lookAt(scene.position);
+
+        // render the scene
+        renderer.render(scene, camera);
+
+		
+		
+    }
+    window.onload = init
+
+</script>
+</body>
+</html>
