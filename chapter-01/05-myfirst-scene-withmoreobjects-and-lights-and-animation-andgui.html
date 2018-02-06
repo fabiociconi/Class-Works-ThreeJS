@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+	<title>First Scene add more objects</title>
+	<script src="../libs/three.js"></script>
+	<script src="../libs/stats.js"></script>
+	<!-- Feb.05 - Using dat.GUI component -->
+	<script src="../libs/dat.GUI.js"></script>
+
+	<style>
+		body {
+			/* set margin to 0 and overflow to hidden, to
+             use the complete page */
+			margin: 0;
+			overflow: hidden;
+		}
+	</style>
+</head>
+
+<body>
+
+	<!-- Div which will hold the Output -->
+	<div id="WebGL-output">
+	</div>
+
+	<!-- Javascript code that runs our Three.js examples -->
+	<script type="text/javascript">
+
+		function DegreeToRadius(params) {
+			var a = params * Math.PI / 180
+			return a;
+		}
+		function CreateSphere(r, nw, nh, color, wireframe, px, py, pz, rotX, rotY, rotZ, sX, sY, sZ) {
+			//****************
+			//* 29/01/2018
+			//rotations are in degrees
+			//add a sphere
+			var geometry = new THREE.SphereGeometry(r || 1, nw || 3, nh || 3);
+			var material = new THREE.MeshBasicMaterial({ color: color || 0xffffff, wireframe: wireframe || false });
+			var sphere = new THREE.Mesh(geometry, material);
+
+			sphere.position.x = px || 0;
+			sphere.position.y = py || 0;
+			sphere.position.z = pz || 0;
+			sphere.rotation.x = DegreeToRadius(rotX) || 0;
+			sphere.rotation.y = DegreeToRadius(rotY) || 0;
+			sphere.rotation.z = DegreeToRadius(rotZ) || 0;
+			sphere.scale.x = sX || 1;
+			sphere.scale.y = sY || 1;
+			sphere.scale.z = sZ || 1;
+			//sphere.rotation.z=-Math.PI/6;//30 degrees
+			//sphere.rotation.z = -DegreeToRadius(30);
+			//sphere.scale.y = 5;
+			return sphere;
+		}
+		function createCube(dx, dy, dz, col, wf, px, py, pz, rx, ry, ry, rz, sx, sy, sz) {
+			var cu = new THREE.BoxGeometry(dx || 1, dy || 1, dz || 1);
+			var cuMat = new THREE.MeshBasicMaterial({ color: col || 0xffffff, wireframe: wf || false });
+			var cube = new THREE.Mesh(cu, cuMat);
+			cube.position.x = px || 0;
+			cube.position.y = py || 0;
+			cube.position.z = pz || 0;
+			cube.rotation.x = DegreeToRadius(rx) || 0;
+			cube.rotation.y = DegreeToRadius(ry) || 0;
+			cube.rotation.z = DegreeToRadius(rz) || 0;
+			cube.scale.x = sx || 1;
+			cube.scale.y = sy || 1;
+			cube.scale.z = sz || 1;
+			return cube;
+		}
+		function createCubeMLM(dx, dy, dz, col, wf, px, py, pz, rx, ry, ry, rz, sx, sy, sz) {
+			//add cube with MeshLamberMaterial
+			var cu = new THREE.BoxGeometry(dx || 1, dy || 1, dz || 1);
+			var cuMat = new THREE.MeshLambertMaterial({ color: col || 0xffffff, wireframe: wf || false });
+			var cube = new THREE.Mesh(cu, cuMat);
+			cube.position.x = px || 0;
+			cube.position.y = py || 0;
+			cube.position.z = pz || 0;
+			cube.rotation.x = DegreeToRadius(rx) || 0;
+			cube.rotation.y = DegreeToRadius(ry) || 0;
+			cube.rotation.z = DegreeToRadius(rz) || 0;
+			cube.scale.x = sx || 1;
+			cube.scale.y = sy || 1;
+			cube.scale.z = sz || 1;
+			return cube;
+		}
+
+		var renderer, scene, camera, spotLight;
+		var controls;
+		var gui, greencube;
+		// once everything is loaded, we run our Three.js stuff.
+		function init() {
+			controls = new function () {
+				this.dx = 2;
+				this.dy = 2;
+				this.dz = 2;
+				this.px = 0;
+				this.py = 4;
+				this.pz = -8;
+
+			}
+			//Feb.05 - Using dat.GUI Step 3 - Instantiate dat.GUI comp.
+			gui = new dat.GUI();
+			//Feb.05 - Using dat.GUI Step 4 - Connect gui with controls
+			gui.add(controls, 'dx', 0, 10); //dx has range type 
+			gui.add(controls, 'dy', 0, 30); //dx has range type 
+			gui.add(controls, 'dz', 0, 10); //dx has range type 
+			//exercise together
+			gui.add(controls, 'px', -20, 20); //dx has range type 
+			gui.add(controls, 'py', 0, 100); //dx has range type 
+			gui.add(controls, 'pz', -20, 20); //dx has range type 
+			//exercise you for rx,ry,rz
+			//...
+			// here we'll put the Three.js stuff
+			//console.log("Hi there!");
+			// create a render and set the size
+			renderer = new THREE.WebGLRenderer();
+			renderer.setClearColor();
+			renderer.setClearColor(new THREE.Color(0xEEEEEE));
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.shadowMapEnabled = true;
+
+			scene = new THREE.Scene();
+			//scene2=new THREE.Scene();
+			camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+			var axes = new THREE.AxisHelper(20);
+			scene.add(axes);
+
+
+			var sphere = CreateSphere(4, 20, 4, 0xff0000, true, 20, 0, 0, 0, 0, 30, 1, 5, 1);
+			scene.add(sphere);
+			//var cube = createCube(7, 7, 7, 0x00ff00);
+			//scene.add(cube);
+
+
+
+			for (let index = 0; index < 10; index++) {
+				var px = -10 + Math.random() * 20;
+				var py = Math.random() * 5;
+				var pz = -10 + Math.random() * 20;
+
+				var sx = .1 + Math.random() * 3.9;
+				var sz = .1 + Math.random() * 3.9;
+
+
+				var sphere = CreateSphere(2, 40, 10, 0x000ff, true, px, py, pz, 0, 0, 0, sx, 1, sz)
+				//scene.add(sphere);
+			}
+			for (let index = 0; index < 100; index++) {
+				var dx = Math.random() * .55;
+				var dy = Math.random() * 10.5;
+				var dz = Math.random() * .55;
+
+				var px = -10 + Math.random() * 20;
+				var pz = -10 + Math.random() * 20;
+
+				var cube = createCube(dx, dy, dz, 0xff000, false, px, py, pz);
+				scene.add(cube);
+			}
+			//cw Jan31/2018
+			//create a plane 
+			var planeGeometry = new THREE.PlaneGeometry(20, 40, 2, 2);
+			var planeMaterial = new THREE.MeshLambertMaterial({ color: 0xAAffaa });
+			var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+			//position
+			//plane.position.x = 0;
+			//plane.position.y = -10;
+			plane.position.z = 10;
+
+			//rotation
+			plane.rotation.x = DegreeToRadius(-90);
+			plane.receiveShadow = true;
+			plane.position.z=+10;
+			scene.add(plane);
+
+
+			//CREATE A LIGHT
+			//--SPOTLIGHT--
+			spotLight = new THREE.SpotLight(0xffffff);
+			spotLight.position.set(0,30,25);
+			spotLight.castShadow = true;
+
+			scene.add(spotLight);
+
+			greencube = createCubeMLM(controls.dx, controls.dy, controls.dz, 0x00ff00, false, 0, 5, 20);
+			greencube.castShadow = true;
+			scene.add(greencube);
+			//****************
+			// create a render and set the size
+			renderer = new THREE.WebGLRenderer();
+			renderer.setClearColor();
+			renderer.setClearColor(new THREE.Color(0xEEEEEE));
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.shadowMapEnable = true;
+
+
+			// add the output of the renderer to the html element
+			document.getElementById("WebGL-output").appendChild(renderer.domElement);
+
+
+
+			// position and point the camera to the center of the scene
+			camera.position.x = -30;
+			camera.position.y = 40;
+			camera.position.z = 30;
+			camera.lookAt(scene.position);
+			renderScene()
+
+		}
+		var step = 0;
+		function renderScene() {
+			var x = spotLight.position.x;
+			var y = spotLight.position.y;
+			var z = spotLight.position.z;
+			//var r =Math.sqrt(x*x+y*y);
+			var r = 2;
+			step += 0.1;
+			spotLight.position.set(x + r * Math.sin(step), y, z + r * Math.cos(step));
+			
+			// render the scene
+			//scene.remove(greencube);
+
+			//var greencube = createCubeMLM(controls.dx, controls.dy, controls.dz, 0x00ff00, false, 0, 5, 20);
+			greencube.scale.set(controls.dx, controls.dy, controls.dz);
+			camera.lookAt(scene.position);
+			//scene.add(greencube);
+			requestAnimationFrame(renderScene);
+
+			renderer.render(scene, camera);
+
+		}
+
+		window.onload = init
+
+	</script>
+</body>
+
+</html>

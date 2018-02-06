@@ -1,0 +1,263 @@
+<html>
+ <head>
+  <title> Ch01-04 - Scene by A.T. with More Objects and Lights and Animations</title>
+   <script src="../../libs/three.js"> </script>
+   <script src="../../libs/stats.js"> </script>
+   <!-- Feb05 - Using dat.GUI - Step 1. Include reference to dat.GUI -->
+   <script src="../../libs/dat.GUI.js"> </script>
+   <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+		.stats {
+			position: absolute;
+			left: 0px;
+			top: 0px;
+		}
+    </style>
+ </head>
+ <body>
+   <div id="my-webgl-output">
+   </div>
+
+   <div id="my-stats-output">
+   </div>
+
+   
+   <script>
+   
+   function Deg2Rad(angle_in_deg){
+	return (angle_in_deg || 0)/180*Math.PI;
+   }
+   
+   function initStats(){
+	var stats=new Stats();
+	stats.setMode(0);  // 0 => fps, 1=> ms / frame
+	document.getElementById("my-stats-output").appendChild(stats.domElement);
+	return stats;
+   }
+   
+   
+   function createCube(dx,dy,dz,col,wf,px,py,pz,sx,sy,sz,rx,ry,rz){
+		//rotations are accepted in degrees 
+        // create a cube
+        var cubeGeometry = new THREE.BoxGeometry(dx || 1,dy || 1, dz || 1);
+        var cubeMaterial = new THREE.MeshBasicMaterial({color: col || 0xFFFFFF, wireframe: wf || false});
+        var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+
+        // position the cube
+        cube.position.x = px || 0;
+        cube.position.y = py || 0;
+        cube.position.z = pz || 0;
+
+		cube.scale.x=sx || 1;
+		cube.scale.y=sy || 1;
+		cube.scale.z=sz || 1;
+
+		cube.rotation.x=Deg2Rad(rx);
+		cube.rotation.y=Deg2Rad(ry);
+		cube.rotation.z=Deg2Rad(rz);
+
+		
+		return cube;
+
+   }
+
+   function createCubeMLM(dx,dy,dz,col,wf,px,py,pz,sx,sy,sz,rx,ry,rz){
+		//MeshLambertMaterial
+		//rotations are accepted in degrees 
+        // create a cube
+        var cubeGeometry = new THREE.BoxGeometry(dx || 1,dy || 1, dz || 1);
+        var cubeMaterial = new THREE.MeshLambertMaterial({color: col || 0xFFFFFF, wireframe: wf || false});
+        var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+
+        // position the cube
+        cube.position.x = px || 0;
+        cube.position.y = py || 0;
+        cube.position.z = pz || 0;
+
+		cube.scale.x=sx || 1;
+		cube.scale.y=sy || 1;
+		cube.scale.z=sz || 1;
+
+		cube.rotation.x=Deg2Rad(rx);
+		cube.rotation.y=Deg2Rad(ry);
+		cube.rotation.z=Deg2Rad(rz);
+
+		
+		return cube;
+
+   }
+
+   
+   function createSphere(r,nw,nh,col,wf,px,py,pz, sx,sy,sz){
+		// r - radius
+		// nw - number of width elements
+		// nh - number of height elements
+		// col- color
+		// wf - wireframe? (true/false)
+		// create a sphere
+        var sphereGeometry = new THREE.SphereGeometry(r, nw, nh);
+        var sphereMaterial = new THREE.MeshBasicMaterial({color: col || 0xFFFFFF, wireframe: wf || false});
+        var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        // position the sphere
+        sphere.position.x = px || 0;
+        sphere.position.y = py || 0;
+        sphere.position.z = pz || 0;
+		sphere.scale.x=sx || 1 ;
+		sphere.scale.x=sy || 1 ;		
+		sphere.scale.z=sz || 1;
+		
+		return sphere;
+   }
+   var scene,camera,renderer, stats,spotLight;
+   var frameCounter=0;
+
+   //Feb05 - Using dat.GUI - Step 1'. Declare global variables needed
+   var controls,gui;
+   function init(){
+		//
+		stats=initStats();
+		// Feb05 - Using dat.GUI - Step 2. Specify controls
+		
+		controls=new function(){
+			this.rotationSpeed=0.01;
+			this.spotLightHeight=40;
+		}
+		
+		// Feb05 - Using dat.GUI - Step 3. Instantiate dat.GUI
+		gui=new dat.GUI();
+
+		// Feb05 - Using dat.GUI - Step 3'. Connect gui with controls
+		gui.add(controls,'rotationSpeed',0,0.5);
+		gui.add(controls,'spotLightHeight',0,100);
+		
+		
+		
+		
+		
+		
+		//scene
+		
+		scene=new THREE.Scene();		
+		//camera
+		camera=new THREE.PerspectiveCamera(50,4/3,0.1,1000);
+		camera.position.x=30;
+		camera.position.y=50;
+		camera.position.z=30;
+
+		camera.lookAt(scene.position);
+		
+		//object(s)
+		var axes=new THREE.AxisHelper(30);		
+		scene.add(axes);
+
+        // add the sphere to the scene
+		//var sphere=createSphere(4,10,5,0x7777ff,true,20,4,2,3,1,3);
+        //scene.add(sphere);
+		
+		for(var i=0;i<10;i++){
+			var r=0.1+Math.random()*2;
+			var px=-10+Math.random()*20;
+			var py=-5+Math.random()*10;
+			var pz=-10+Math.random()*20;
+
+			var sx=.5+Math.random()*3.5;
+			var sy=.5+Math.random()*3.5;
+			var sz=.5+Math.random()*3.5;
+			var sphere=createSphere(r,15,15,0xFF0000,false,px,py,pz,sx,sy,sz);
+			//scene.add(sphere);
+			
+		}
+		
+        // add the cube to the scene
+		//function createCube(dx,dy,dz,col,wf,px,py,pz,sx,sy,sz,rx,ry,rz){
+		//var cube=createCube(4,4,4,0xFF0000,true,-4,3,0,5,1,1,0,0,-30);
+		//scene.add(cube);
+		
+		for(var i=0;i<1500;i++){
+			var dx=Math.random()*.1;
+			var dy=Math.random()*5;
+			var dz=Math.random()*.2;
+			
+			var px=-10+Math.random()*20;
+			//var py=-5+Math.random()*10;
+			var py=dy/2;
+			var pz=-10+Math.random()*20;
+
+			//var sx=.5+Math.random()*3.5;
+			//var sy=.5+Math.random()*3.5;
+			//var sz=.5+Math.random()*3.5;
+
+			//var rx=Math.random()*Deg2Rad(45);
+			//var ry=Math.random()*Deg2Rad(45);
+			//var rz=Math.random()*Deg2Rad(45);
+			
+			
+			//var cube=createCube(dx,dy,dz,0x0000FF,false,px,py,pz,sx,sy,sz,rx,ry,rz);
+			var cube=createCubeMLM(dx,dy,dz,0x8888FF,false,px,py,pz);
+			scene.add(cube);
+			
+		}
+		
+		//add a plane
+		//THREE.PlaneGeometry = function(width, height, widthSegments, heightSegments) {
+		var planeGeometry=new THREE.PlaneGeometry(20,20,2,2);
+		//var planeMaterial=new THREE.MeshBasicMaterial({color:0xFF0000,wireframe:true});
+		//var planeMaterial=new THREE.MeshBasicMaterial({color:0xEEEEEE});
+		var planeMaterial=new THREE.MeshLambertMaterial({color:0xEEEEEE});
+		var plane=new THREE.Mesh(planeGeometry,planeMaterial);
+		plane.position.x=0;
+		plane.position.y=0;
+		plane.position.z=0;
+		plane.scale.x=2;
+		plane.scale.y=2;
+		
+		plane.rotation.x=-Deg2Rad(90);
+		plane.position.x +=10; 
+		plane.position.z +=10; 
+		scene.add(plane);
+		
+		spotLight=new THREE.SpotLight(0xFFFFFF);
+		spotLight.position.y=controls.spotLightHeight; //Feb05 - use controls
+		scene.add(spotLight);
+		
+		
+		//renderer
+		renderer=new THREE.WebGLRenderer();
+		renderer.setClearColor();
+        renderer.setClearColor(new THREE.Color(0xBBFFBB));
+        renderer.setSize(800,600);
+
+		//render all this
+		document.getElementById("my-webgl-output").appendChild(renderer.domElement);
+		
+		//renderScene(renderer,scene,camera);
+		renderScene();
+		
+	 }
+	 
+	 function renderScene(){
+		frameCounter += 1;
+		var t=frameCounter*controls.rotationSpeed;//Feb. 5 - use controls.rotationSpeed
+		//console.log(t);
+		
+		var x=spotLight.position.x;
+		var y=controls.spotLightHeight; //Feb. 5 - use controls.spotLightHeight
+		var z=spotLight.position.z;
+		spotLight.position.set(x*Math.sin(t)-10,y,z*Math.cos(t)-10)
+		scene.rotation.set(0,t,0);
+		
+		stats.update();
+		requestAnimationFrame(renderScene);
+		renderer.render(scene,camera);
+	 }
+	 
+	 
+	 window.onload=init();
+   </script>
+  </body>
+</html>  
+   
+ 
