@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>First Scene of fn ln with more objects and lights and animation and dat.GUI and ascii renderer</title>
+    <script src="../../../libs/three.js"></script>
+    <script src="../../../libs/stats.js"></script>
+	<!-- Feb.05 - Using dat.GUI component -->
+    <script src="../../../libs/dat.GUI.js"></script>
+	<!-- Feb.05 - Using AsciiEffect component -->
+    <script src="../../../libs/AsciiEffect.js"></script>
+	
+    <style>
+        body {margin: 0;overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Div which will hold the Output -->
+<div id="WebGL-output">
+</div>
+
+<div id="stats-output">
+</div>
+
+
+
+<!-- Javascript code that runs our Three.js examples -->
+<script type="text/javascript">
+	function initStats() {
+		var stats=new Stats();
+		stats.setMode(0); // 0 => fps, 1 => ms / frame
+		stats.domElement.style.position='absolute';
+		stats.domElement.style.left='0px';
+		stats.domElement.style.top='0px';
+        document.getElementById("stats-output").appendChild(stats.domElement);
+		return stats;
+	}
+	function Deg2Rad(angle_in_degrees){
+		var angle_in_radians=(angle_in_degrees || 0)*Math.PI/180;
+		return angle_in_radians;
+	}
+	
+	function createSphere(r,nw,nh,col,wf,px,py,pz,rx,ry,rz,sx,sy,sz){
+		//Add a sphere
+		//THREE.SphereGeometry = function(radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength)
+		//rotations are in degrees
+		var sphereGeometry=new THREE.SphereGeometry(r || 1,nw || 3,nh || 3);
+		var sphereMaterial=new THREE.MeshBasicMaterial({color:col || 0xFFFFFF,wireframe:wf || false});
+		var sphere=new THREE.Mesh(sphereGeometry,sphereMaterial);
+		
+		sphere.position.x=px || 0;
+		sphere.position.y=py || 0;
+		sphere.position.z=pz || 0;
+
+		sphere.rotation.x=Deg2Rad(rx) || 0;
+		sphere.rotation.y=Deg2Rad(ry) || 0;
+		sphere.rotation.z=Deg2Rad(rz) || 0;
+
+
+		sphere.scale.x=sx || 1;
+		sphere.scale.y=sy || 1; //30 deg
+		sphere.scale.z=sz || 1; //30 deg
+		return sphere;
+
+	}
+
+	function createCube(dx,dy,dz,col,wf,px,py,pz,rx,ry,rz,sx,sy,sz){
+		//Add a Cube
+		//THREE.SphereGeometry = function(radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength)
+		//rotations are in degrees
+		var cubeGeometry=new THREE.BoxGeometry(dx || 1,dy || 1,dz || 1);
+		var cubeMaterial=new THREE.MeshBasicMaterial({color:col || 0xFFFFFF,wireframe:wf || false});
+		var cube=new THREE.Mesh(cubeGeometry,cubeMaterial);
+		
+		cube.position.x=px || 0;
+		cube.position.y=py || 0;
+		cube.position.z=pz || 0;
+
+		cube.rotation.x=Deg2Rad(rx) || 0;
+		cube.rotation.y=Deg2Rad(ry) || 0;
+		cube.rotation.z=Deg2Rad(rz) || 0;
+
+
+		cube.scale.x=sx || 1;
+		cube.scale.y=sy || 1; //30 deg
+		cube.scale.z=sz || 1; //30 deg
+		return cube;
+
+	}
+
+	function createCubeMLM(dx,dy,dz,col,wf,px,py,pz,rx,ry,rz,sx,sy,sz){
+		//Add a Cube with MeshLambertMaterial
+		//THREE.SphereGeometry = function(radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength)
+		//rotations are in degrees
+		var cubeGeometry=new THREE.BoxGeometry(dx || 1,dy || 1,dz || 1);
+		var cubeMaterial=new THREE.MeshLambertMaterial({color:col || 0xFFFFFF,wireframe:wf || false});
+		var cube=new THREE.Mesh(cubeGeometry,cubeMaterial);
+		
+		cube.position.x=px || 0;
+		cube.position.y=py || 0;
+		cube.position.z=pz || 0;
+
+		cube.rotation.x=Deg2Rad(rx) || 0;
+		cube.rotation.y=Deg2Rad(ry) || 0;
+		cube.rotation.z=Deg2Rad(rz) || 0;
+
+
+		cube.scale.x=sx || 1;
+		cube.scale.y=sy || 1; //30 deg
+		cube.scale.z=sz || 1; //30 deg
+		return cube;
+
+	}
+	//var myapp={};
+	var renderer,scene,camera,spotLight,stats;
+	
+	//Feb.05
+	var controls;
+	var gui,green_cube;
+	var asciiEffect;
+    // once everything is loaded, we run our Three.js stuff.
+    function init() {
+		//Feb.05 - Using dat.GUI Step 2 - Specifying desired controls
+		controls=new function(){
+			this.dx=8;
+			this.dy=8;
+			this.dz=8;
+			//exercise together
+			this.px=0;
+			this.py=4;
+			this.pz=-8;
+			
+			//exercise you
+			//do the same for rx,ry, and rz
+			
+		}
+		//Feb.05 - Using dat.GUI Step 3 - Instantiate dat.GUI comp.
+		gui=new dat.GUI();
+		//Feb.05 - Using dat.GUI Step 4 - Connect gui with controls
+		gui.add(controls,'dx',0,10); //dx has range type 
+		gui.add(controls,'dy',0,30); //dx has range type 
+		gui.add(controls,'dz',0,10); //dx has range type 
+		//exercise together
+		gui.add(controls,'px',-20,20); //dx has range type 
+		gui.add(controls,'py',0,100); //dx has range type 
+		gui.add(controls,'pz',-20,20); //dx has range type 
+		//exercise you for rx,ry,rz
+		//...
+		
+			
+
+		// here we'll put the Three.js stuff
+		//console.log("Hi there!");
+        // create a render and set the size
+        renderer = new THREE.WebGLRenderer();
+        renderer.setClearColor();
+        renderer.setClearColor(new THREE.Color(0xEEEEEE));
+        renderer.setSize(window.innerWidth, window.innerHeight);
+		renderer.shadowMapEnabled=true;
+
+		//Feb 5 - AsciiEffect
+		asciiEffect=new THREE.AsciiEffect(renderer);
+		asciiEffect.setSize(window.innerWidth,window.innerHeight);
+
+		
+		
+		//stats
+		stats=initStats();
+		//scene
+		scene=new THREE.Scene();
+		//camera
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+		
+		//Create object and add them in the scene  (create the world)
+		var axes = new THREE.AxisHelper(20);
+        scene.add(axes);
+		
+		//CW Jan.31st comment out the following lines
+		//var sphere=createSphere(4,20,4,0xFF0000,true,20,0,0,0,0,30,1,5,1);
+		//scene.add(sphere);
+		
+		for(var i=0;i<10;i++){
+			var px=-10+Math.random()*20;
+			var pz=-10+Math.random()*20;
+			var py=Math.random()*5;
+			
+			var sx=.1+Math.random()*3.9;
+			var sz=.1+Math.random()*3.9;
+			
+			var sphere=createSphere(1,20,20,0x0000FF,false,px,py,pz,0,0,0,sx,1,sz);
+			//scene.add(sphere);
+		
+		}
+		
+		//CW Jan.31st comment out the following lines
+		//var cube=createCube(5,7,2,0x00FF00,true);
+		//var cube=createCube(7,7,7,0x00FF00);
+		//scene.add(cube);
+		
+		for(var i=0;i<10;i++){
+			var dx=Math.random()*1.55;
+			var dz=Math.random()*1.55;
+			var dy=Math.random()*10.5;
+		
+			var px=-10+Math.random()*20;
+			var pz=-10+Math.random()*20;
+			var py=dy/2;
+			
+			var cube=createCubeMLM(dx,dy,dz,0xFF0000,false,px,py,pz);
+			//if(i<50)
+			//{
+				cube.castShadow=true;
+			//}else{
+				cube.receiveShadow=true;			
+			//}
+			
+			scene.add(cube);
+		
+		}
+		
+		//CW Jan.31st
+		//create a plane
+		var planeGeometry=new THREE.PlaneGeometry(20,40,2,2);
+		//var planeMaterial=new THREE.MeshLambertMaterial({color:0xAAFFAA});
+		var planeMaterial=new THREE.MeshLambertMaterial({color:0xFFFFFF});
+		var plane=new THREE.Mesh(planeGeometry,planeMaterial);
+		plane.receiveShadow=true;
+		plane.rotation.x=-Deg2Rad(90);
+		plane.position.z=+10;
+		scene.add(plane);
+		
+		//create a light
+		//spotLight
+		spotLight=new THREE.SpotLight(0xffffff);
+		spotLight.position.set(0,30,25);
+		spotLight.castShadow=true;
+
+		
+		scene.add(spotLight);
+		//Feb.05 - Using dat.GUI Step 5 - use controls 
+
+		//function createCubeMLM(dx,dy,dz,col,wf,px,py,pz,rx,ry,rz,sx,sy,sz)
+
+		green_cube=createCubeMLM(controls.dx,controls.dy,controls.dz,0x00FF00,false,
+		controls.px,controls.py,controls.pz);
+		green_cube.castShadow=true;
+		scene.add(green_cube);
+		
+		
+		
+		
+		
+		
+
+        // add the output of the renderer to the html element
+        //document.getElementById("WebGL-output").appendChild(renderer.domElement);
+
+		//asciiEffect
+		document.getElementById("WebGL-output").appendChild(asciiEffect.domElement);
+		
+
+		scene.rotation.y=-Deg2Rad(90);
+		scene.position.z -= 10;
+		// position and point the camera to the center of the scene
+        camera.position.x = -30;
+        camera.position.y = 40;
+        camera.position.z = 30;
+        camera.lookAt(scene.position);
+
+		//CW Jan.31st comment out the following lines and create renderScene func.
+        // render the scene
+        //renderer.render(scene, camera);
+		//renderScene();
+		renderScene2();
+    }
+	var step=0;
+	function renderScene(){
+		//wire up stats
+		stats.update();
+
+		var x=camera.position.x;
+		var y=camera.position.y;
+		var z=camera.position.z;
+		//var r=Math.sqrt(x*x+y*y);
+		r = 2;
+		step += 0.1;
+		camera.position.set(x+r*Math.sin(step),y,z+r*Math.cos(step));
+		camera.lookAt(scene.position);
+		
+		//green_cube.castShadow=true;
+		//scene.add(green_cube);
+		
+		requestAnimationFrame(renderScene);
+		renderer.render(scene, camera);
+	}
+
+	
+	
+	function renderScene2(){
+		//wire up stats
+		stats.update();
+		
+		var x=spotLight.position.x;
+		var y=spotLight.position.y;
+		var z=spotLight.position.z;
+		r = 2;
+		step += 0.1;
+		spotLight.position.set(x+r*Math.sin(step),y,z+r*Math.cos(step));
+
+		//Feb.05 - Using dat.GUI Step 5 - use controls 
+		//scene.remove(green_cube);
+		green_cube.scale.x=controls.dx/10;
+		green_cube.scale.y=controls.dy/30;
+		green_cube.scale.z=controls.dz/10;
+
+		green_cube.position.set(controls.px,controls.py,controls.pz);
+
+
+
+		requestAnimationFrame(renderScene2);
+
+		
+		//renderer.render(scene, camera);
+		asciiEffect.render(scene, camera);
+		
+	}
+
+	
+    window.onload = init
+
+</script>
+</body>
+</html>
