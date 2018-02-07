@@ -35,6 +35,11 @@
 			var controls;
 			var gui, green_cube;
 			var step = 0;
+			
+			//feb07 ambientLight
+			var ambientLight, pointLight;
+
+			var pointColor = "#ccffcc"
 
 			function initStats() {
 				var stats = new Stats();
@@ -72,7 +77,6 @@
 				return sphere;
 
 			}
-
 			function createCube(dx, dy, dz, col, wf, px, py, pz, rx, ry, rz, sx, sy, sz) {
 				//Add a Cube
 				//THREE.SphereGeometry = function(radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength)
@@ -96,7 +100,6 @@
 				return cube;
 
 			}
-
 			function createCubeMLM(dx, dy, dz, col, wf, px, py, pz, rx, ry, rz, sx, sy, sz) {
 				//Add a Cube with MeshLambertMaterial
 				//THREE.SphereGeometry = function(radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength)
@@ -139,7 +142,6 @@
 				requestAnimationFrame(renderScene);
 				renderer.render(scene, camera);
 			}
-
 			function renderScene2() {
 				//wire up stats
 				stats.update();
@@ -164,7 +166,6 @@
 				requestAnimationFrame(renderScene2);
 				renderer.render(scene, camera);
 			}
-
 			controls = new function () {
 				this.dx = 8;
 				this.dy = 8;
@@ -174,11 +175,12 @@
 				this.py = 4;
 				this.pz = -8;
 
-				//exercise you
-				//do the same for rx,ry, and rz
-
+				//Lights
+				this.pointColor=pointColor;
+				this.pointIntensity=1;
+				this.pointDistance=100;
 			}
-				gui = new dat.GUI();
+			gui = new dat.GUI();
 			gui.add(controls, 'dx', 0, 10); //dx has range type 
 			gui.add(controls, 'dy', 0, 30); //dx has range type 
 			gui.add(controls, 'dz', 0, 10); //dx has range type 
@@ -186,6 +188,12 @@
 			gui.add(controls, 'px', -20, 20); //dx has range type 
 			gui.add(controls, 'py', 0, 100); //dx has range type 
 			gui.add(controls, 'pz', -20, 20); //dx has range type 
+			
+			//feb07 -colors
+			gui.addColor(controls, 'pointColor').onChange((c=>{pointLight.color=new THREE.Color(c);}));
+
+			gui.add(controls,'pointIntensity',0,1).onChange(c=>pointLight.intensity=c);
+			gui.add(controls,'pointDistance',0,200).onChange(c=>pointLight.distance=c);;
 
 			// here we'll put the Three.js stuff
 			//console.log("Hi there!");
@@ -262,28 +270,39 @@
 			plane.position.z = +10;
 			scene.add(plane);
 
+			///////////////////////////////////////////////////////////
+			//  LIGHTS												//
+			/////////////////////////////////////////////////////////
 			//create a light
 			//spotLight
 			spotLight = new THREE.SpotLight(0xffffff);
 			spotLight.position.set(0, 30, 25);
 			spotLight.castShadow = true;
-
-
 			scene.add(spotLight);
+
+			//ambientLight
+			ambientLight = new THREE.AmbientLight(0x0c0cac);
+			//scene.add(ambientLight);
+
+			//pointLight
+			
+			pointLight = new THREE.PointLight(pointColor);
+			pointLight.distance = 10//
+			//set position using Three.vector3
+			pointLight.position.x=3;
+			pointLight.position.y=5;
+			pointLight.position.z=3;
+			//
+			scene.add(pointLight);
+
+
 			//Feb.05 - Using dat.GUI Step 5 - use controls 
 
 			//function createCubeMLM(dx,dy,dz,col,wf,px,py,pz,rx,ry,rz,sx,sy,sz)
 
-			green_cube = createCubeMLM(controls.dx, controls.dy, controls.dz, 0x00FF00, false,
-				controls.px, controls.py, controls.pz);
+			green_cube = createCubeMLM(controls.dx, controls.dy, controls.dz, 0x00FF00, false, controls.px, controls.py, controls.pz);
 			green_cube.castShadow = true;
 			scene.add(green_cube);
-
-
-
-
-
-
 
 			// add the output of the renderer to the html element
 			document.getElementById("WebGL-output").appendChild(renderer.domElement);
