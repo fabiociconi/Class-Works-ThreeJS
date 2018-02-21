@@ -3,7 +3,7 @@
 <html>
 
 <head>
-	<title>First Scene of fn ln with more objects and lights and animation and dat.GUI</title>
+	<title>04- SECOND SCENE </title>
 	<script src="../libs/three.js"></script>
 	<script src="../libs/stats.js"></script>
 	<script src="../libs/dat.GUI.js"></script>
@@ -28,19 +28,23 @@
 	<!-- Javascript code that runs our Three.js examples -->
 	<script type="text/javascript">
 
+		/***************************************************************\
+		|				S T A R T     P R O G R A M                     |
+		\***************************************************************/
 
 		// once everything is loaded, we run our Three.js stuff.
 		function init() {
+			//global variables
 			var renderer, scene, camera, spotLight, stats, fog, overrideMaterial;
 			var controls;
-			var gui, green_cube;
+			var gui, green_cube, triangle;
 			var step = 0;
 
 			//feb07 ambientLight
 			var ambientLight, pointLight;
 
 			var pointColor = "#ccffcc"
-
+			//initial
 			function initStats() {
 				var stats = new Stats();
 				stats.setMode(0); // 0 => fps, 1 => ms / frame
@@ -50,10 +54,12 @@
 				document.getElementById("stats-output").appendChild(stats.domElement);
 				return stats;
 			}
+			//degrees to radius
 			function Deg2Rad(angle_in_degrees) {
 				var angle_in_radians = (angle_in_degrees || 0) * Math.PI / 180;
 				return angle_in_radians;
 			}
+			//create sphere
 			function createSphere(r, nw, nh, col, wf, px, py, pz, rx, ry, rz, sx, sy, sz) {
 				//Add a sphere
 				//THREE.SphereGeometry = function(radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength)
@@ -77,6 +83,7 @@
 				return sphere;
 
 			}
+			//create cube
 			function createCube(dx, dy, dz, col, wf, px, py, pz, rx, ry, rz, sx, sy, sz) {
 				//Add a Cube
 				//THREE.SphereGeometry = function(radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength)
@@ -100,6 +107,7 @@
 				return cube;
 
 			}
+			//create Cube
 			function createCubeMLM(dx, dy, dz, col, wf, px, py, pz, rx, ry, rz, sx, sy, sz) {
 				//Add a Cube with MeshLambertMaterial
 				//THREE.SphereGeometry = function(radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength)
@@ -123,6 +131,7 @@
 				return cube;
 
 			}
+			//render(not used)
 			function renderScene() {
 				//wire up stats
 				stats.update();
@@ -138,10 +147,12 @@
 
 				//green_cube.castShadow=true;
 				//scene.add(green_cube);
+				//scene.add(tetrahedron);
 
 				requestAnimationFrame(renderScene);
 				renderer.render(scene, camera);
 			}
+			//render
 			function renderScene2() {
 				//wire up stats
 				stats.update();
@@ -150,8 +161,10 @@
 				var y = spotLight.position.y;
 				var z = spotLight.position.z;
 				r = 2;
-				step += 0.1;
-				spotLight.position.set(x + r * Math.sin(step), y, z + r * Math.cos(step));
+				step += 0.01;
+				//spotLight.position.set(x + r * Math.sin(step), y, z + r * Math.cos(step));
+
+				tetrahedron.rotation.y = step;
 
 				//Feb.05 - Using dat.GUI Step 5 - use controls 
 				//scene.remove(green_cube);
@@ -167,6 +180,7 @@
 				renderer.render(scene, camera);
 			}
 			controls = new function () {
+				//variables
 				this.dx = 8;
 				this.dy = 8;
 				this.dz = 8;
@@ -188,44 +202,65 @@
 				this.overrrideMaterialColor = "#FFFFFF";
 				this.overrrideMaterialWireframe = false;
 				this.overrrideMaterialFrameLW = 1;
+
+				//feb 21st - add controls for additional props/geos/cameras
+
+				this.tetrahedronVisibility = true;
+				this.buildingsVisibility = true;
+				this.triangleVisibility = true;
+				this.greencubeVisibility = true;
+				this.stopRotation = true;
+
 			}
+			{ // GUI
+				gui = new dat.GUI();
+				gui.add(controls, 'dx', 0, 10); //dx has range type 
+				gui.add(controls, 'dy', 0, 30); //dx has range type 
+				gui.add(controls, 'dz', 0, 10); //dx has range type 
+				//exercise together
+				gui.add(controls, 'px', -20, 20); //dx has range type 
+				gui.add(controls, 'py', 0, 100); //dx has range type 
+				gui.add(controls, 'pz', -20, 20); //dx has range type 
 
-			gui = new dat.GUI();
-			gui.add(controls, 'dx', 0, 10); //dx has range type 
-			gui.add(controls, 'dy', 0, 30); //dx has range type 
-			gui.add(controls, 'dz', 0, 10); //dx has range type 
-			//exercise together
-			gui.add(controls, 'px', -20, 20); //dx has range type 
-			gui.add(controls, 'py', 0, 100); //dx has range type 
-			gui.add(controls, 'pz', -20, 20); //dx has range type 
+				//feb07 -colors
+				gui.addColor(controls, 'pointColor').onChange((c => { pointLight.color = new THREE.Color(c); }));
+				gui.add(controls, 'pointIntensity', 0, 1).onChange(c => pointLight.intensity = c);
+				gui.add(controls, 'pointDistance', 0, 200).onChange(c => pointLight.distance = c);;
 
-			//feb07 -colors
-			gui.addColor(controls, 'pointColor').onChange((c => { pointLight.color = new THREE.Color(c); }));
-			gui.add(controls, 'pointIntensity', 0, 1).onChange(c => pointLight.intensity = c);
-			gui.add(controls, 'pointDistance', 0, 200).onChange(c => pointLight.distance = c);;
+				//Feb.12 - using addFolder
+				var folderFog = gui.addFolder("Fog Controls");
+				folderFog.addColor(controls, 'fogColor').onChange((c) => { scene.fog.color = new THREE.Color(c); }); // use color directly
+				folderFog.add(controls, 'fogNear', 0, 50).onChange((near) => { scene.fog.near = near; }); // use near directly
+				folderFog.add(controls, 'fogFar', 50, 200).onChange((far) => { scene.fog.far = far; }); // use near directly
+				// var folderFog2 = gui.addFolder("FogExp2 Controls");
+				// folderFog2.addColor(controls, 'fog2Color').onChange((c) => { scene.fog.color = new THREE.Color(c); }); // use color directly
+				// folderFog2.add(controls, 'fog2Density', 0, 0.03).onChange((density) => { scene.fog.density = density; }); // use near directly
 
-			//Feb.12 - using addFolder
-			var folderFog = gui.addFolder("Fog Controls");
-			folderFog.addColor(controls, 'fogColor').onChange((c) => { scene.fog.color = new THREE.Color(c); }); // use color directly
-			folderFog.add(controls, 'fogNear', 0, 50).onChange((near) => { scene.fog.near = near; }); // use near directly
-			folderFog.add(controls, 'fogFar', 50, 200).onChange((far) => { scene.fog.far = far; }); // use near directly
-			// var folderFog2 = gui.addFolder("FogExp2 Controls");
-			// folderFog2.addColor(controls, 'fog2Color').onChange((c) => { scene.fog.color = new THREE.Color(c); }); // use color directly
-			// folderFog2.add(controls, 'fog2Density', 0, 0.03).onChange((density) => { scene.fog.density = density; }); // use near directly
+				/*var folderOM = gui.addFolder("Override Material Controls");
+				folderOM.addColor(controls, 'overrrideMaterialColor').onChange((c) => { scene.overrideMaterial.color = new THREE.Color(c); }); // use color directly
+				folderOM.add(controls, 'overrrideMaterialWireframe', [false, true]).onChange((wf) => {
+					if (wf == "false")
+						scene.overrideMaterial.wireframe = false;
+					else {
+						scene.overrideMaterial.wireframe = true;
+						scene.overrideMaterial.wireframeLinewidth = controls.overrideMaterialWireFrameLW;
+					}
+				}); // use near directly
+				folderOM.add(controls, 'overrrideMaterialFrameLW', 1, 5).onChange((wflw) => { scene.overrideMaterial.wireframeLinewidth = wflw; }); // use near directly
+				*/
 
-			var folderOM = gui.addFolder("Override Material Controls");
-			folderOM.addColor(controls, 'overrrideMaterialColor').onChange((c) => { scene.overrideMaterial.color = new THREE.Color(c); }); // use color directly
-			folderOM.add(controls, 'overrrideMaterialWireframe', [false, true]).onChange((wf) => {
-				if (wf == "false")
-					scene.overrideMaterial.wireframe = false;
-				else {
-					scene.overrideMaterial.wireframe = true;
-					scene.overrideMaterial.wireframeLinewidth = controls.overrideMaterialWireFrameLW;
-				}
-			}); // use near directly
-			folderOM.add(controls, 'overrrideMaterialFrameLW', 1, 5).onChange((wflw) => { scene.overrideMaterial.wireframeLinewidth = wflw; }); // use near directly
+				var folderFeb21 = gui.addFolder("Checkbox - Visibility");
+				folderFeb21.add(controls,'tetrahedronVisibility').onChange(c=>{tetrahedron.visible=c});
 
-
+				folderFeb21.add(controls,'buildingsVisibility').onChange(
+					c=>{scene.traverse(e=>{if (e.name.startsWith("Building")){e.visible=c;}
+				})});
+				//add visibility for triangle an green cube
+				//rotate for the tetrahedron
+				folderFeb21.add(controls,'triangleVisibility').onChange(c=>{triangle.visible=c});
+				folderFeb21.add(controls,'greencubeVisibility').onChange(c=>{green_cube.visible=c});
+				folderFeb21.add(controls,'stopRotation').onChange(c=>{tetrahedron.rotation.y=0.0});
+			}
 			// here we'll put the Three.js stuff
 			//console.log("Hi there!");
 			// create a render and set the size
@@ -285,54 +320,54 @@
 				//}else{
 				cube.receiveShadow = true;
 				//}
-
+					cube.name="Building"+i;
+					console.log("reste"+cube.name)
 				scene.add(cube);
 
 			}
 
 			//CW Jan.31st
-			//create a plane
-			var planeGeometry = new THREE.PlaneGeometry(20, 40, 2, 2);
-			//var planeMaterial=new THREE.MeshLambertMaterial({color:0xAAFFAA});
-			var planeMaterial = new THREE.MeshLambertMaterial({ color: 0xFFFFFF });
-			var plane = new THREE.Mesh(planeGeometry, planeMaterial);
-			plane.receiveShadow = true;
-			plane.rotation.x = -Deg2Rad(90);
-			plane.position.z = +10;
-			scene.add(plane);
+			
 
-			///////////////////////////////////////////////////////////
-			//  LIGHTS												//
-			/////////////////////////////////////////////////////////
-			//create a light
-			//spotLight
-			spotLight = new THREE.SpotLight(0xffffff);
-			spotLight.position.set(0, 30, 25);
-			spotLight.castShadow = true;
-			spotLight.intensity=3;
-			scene.add(spotLight);
+			{	//create a plane
+				var planeGeometry = new THREE.PlaneGeometry(20, 40, 2, 2);
+				//var planeMaterial=new THREE.MeshLambertMaterial({color:0xAAFFAA});
+				var planeMaterial = new THREE.MeshLambertMaterial({ color: 0xFFFFFF });
+				var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+				plane.receiveShadow = true;
+				plane.rotation.x = -Deg2Rad(90);
+				plane.position.z = +10;
+				scene.add(plane);
+			}
+			{	//LIGHTS
+				///////////////////////////////////////////////////////////
+				//  LIGHTS												//
+				/////////////////////////////////////////////////////////
+				//create a light
+				//spotLight
+				spotLight = new THREE.SpotLight(0xffffff);
+				spotLight.position.set(0, 30, 25);
+				spotLight.castShadow = true;
+				spotLight.intensity = 3;
+				scene.add(spotLight);
 
-			//ambientLight
-			ambientLight = new THREE.AmbientLight(0x0c0cac);
-			//scene.add(ambientLight);
+				//ambientLight
+				ambientLight = new THREE.AmbientLight(0x0c0cac);
+				//scene.add(ambientLight);
+			}
+			{	//pointLight
 
-			//pointLight
-
-			pointLight = new THREE.PointLight(pointColor);
-			pointLight.distance = 10//
-			//set position using Three.vector3
-			pointLight.position.x = 3;
-			pointLight.position.y = 5;
-			pointLight.position.z = 3;
-			//
-			scene.add(pointLight);
-
-
-			//Feb.05 - Using dat.GUI Step 5 - use controls 
-
-
-
-			{//add a custom geometry( a trinagular face)
+				pointLight = new THREE.PointLight(pointColor);
+				pointLight.distance = 10//
+				//set position using Three.vector3
+				pointLight.position.x = 3;
+				pointLight.position.y = 5;
+				pointLight.position.z = 3;
+				//
+				scene.add(pointLight);
+			}
+			{	//Triangle
+				//add a custom geometry( a trinagular face)
 				var vertices = [];
 				var faces = [];
 				vertices.push(new THREE.Vector3(0, 0, 0)); //V_0
@@ -349,12 +384,12 @@
 				triangleGeo.computeFaceNormals();
 
 				var mat = new THREE.MeshLambertMaterial({ color: 0xff0000 });
-				var triangle = new THREE.Mesh(triangleGeo, mat);
+				triangle = new THREE.Mesh(triangleGeo, mat);
 				triangle.scale.set(9, 1, 9);
-				//scene.add(triangle);
+				scene.add(triangle);
 			}
-
-			{//Feb 14 - Exercise - Add a custom geometry(a tetrahedron)
+			{	//Tetrahedron
+				//Feb 14 - Exercise - Add a custom geometry(a tetrahedron)
 
 				var vertices2 = [];
 				var faces2 = [];
@@ -364,9 +399,9 @@
 				vertices2.push(new THREE.Vector3(1, -1, -1));  //V_2
 				//create faces array
 				faces2.push(new THREE.Face3(2, 1, 0));//F_0
-				faces2.push(new THREE.Face3(0, 3, 2));//F_0
-				faces2.push(new THREE.Face3(1, 3, 0));//F_0
-				faces2.push(new THREE.Face3(2, 3, 1));//F_0
+				faces2.push(new THREE.Face3(0, 3, 2));//F_1
+				faces2.push(new THREE.Face3(1, 3, 0));//F_2
+				faces2.push(new THREE.Face3(2, 3, 1));//F_3
 
 				//create Geometry
 				var tetrahedronGeo = new THREE.Geometry();
@@ -374,10 +409,11 @@
 				tetrahedronGeo.faces = faces2;
 				tetrahedronGeo.computeFaceNormals();
 
-				var tetrahedronMat = new THREE.MeshLambertMaterial({ color: 0xff0000 });
+				var tetrahedronMat = new THREE.MeshLambertMaterial({ color: 0xFF00FF });
 				var tetrahedron = new THREE.Mesh(tetrahedronGeo, tetrahedronMat);
-				tetrahedron.position.set(10,10,-10);
-				tetrahedron.rotation.set(20, 30, 180);
+				tetrahedron.position=new THREE.Vector3(10,0,+10); 
+				//tetrahedron.position.set(10, 10, -10);
+				//tetrahedron.rotation.set(20, 30, 180);
 				tetrahedron.scale.set(5, 5, 5);
 				scene.add(tetrahedron);
 
@@ -393,6 +429,7 @@
 
 			scene.rotation.y = Deg2Rad(-90);
 			scene.position.z -= 10;
+
 			// position and point the camera to the center of the scene
 			camera.position.x = -30;
 			camera.position.y = 40;
@@ -403,15 +440,19 @@
 			// render the scene
 			//renderer.render(scene, camera);
 			//renderScene();
-			scene.fog = new THREE.Fog("0xFFFFFF", .1, 100);
+			scene.fog = new THREE.Fog(0xFFFFFF, .1);
 
-			scene.overrideMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, wireframe: false });
-
+			//scene.overrideMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, wireframe: false });
+			requestAnimationFrame(renderScene2);
 			renderScene2();
 		}
-
+		
 
 		window.onload = init
+
+		/***************************************************************\
+		|				   E N D      P R O G R A M                     |
+		\***************************************************************/
 
 	</script>
 </body>
