@@ -15,220 +15,264 @@
         }
     </style>
 </head>
+
 <body>
 
-<div id="Stats-output">
-</div>
-<!-- Div which will hold the Output -->
-<div id="WebGL-output">
-</div>
+    <div id="Stats-output">
+    </div>
+    <!-- Div which will hold the Output -->
+    <div id="WebGL-output">
+    </div>
 
-<!-- Javascript code that runs our Three.js examples -->
-<script type="text/javascript">
+    <!-- Javascript code that runs our Three.js examples -->
+    <script type="text/javascript">
 
-    // once everything is loaded, we run our Three.js stuff.
-    function init() {
+        // once everything is loaded, we run our Three.js stuff.
+        function init() {
 
-        var stats = initStats();
+            var stats = initStats();
 
-        // create a scene, that will hold all our elements such as objects, cameras and lights.
-        var scene = new THREE.Scene();
+            // create a scene, that will hold all our elements such as objects, cameras and lights.
+            var scene = new THREE.Scene();
 
-        // create a camera, which defines where we're looking at.
-        var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            // create a camera, which defines where we're looking at.
+            var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-        // create a render and set the size
-        var renderer = new THREE.WebGLRenderer();
+            // create a render and set the size
+            var renderer = new THREE.WebGLRenderer();
 
-        renderer.setClearColor(new THREE.Color(0x000000, 1.0));
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMapEnabled = true;
-
-
-        // position and point the camera to the center of the scene
-        camera.position.x = -30;
-        camera.position.y = 40;
-        camera.position.z = 30;
-        camera.lookAt(scene.position);
-
-        // add subtle ambient lighting
-        var ambientLight = new THREE.AmbientLight(0x0c0c0c);
-        scene.add(ambientLight);
-
-        // add spotlight for the shadows
-        var spotLight = new THREE.SpotLight(0xffffff);
-        spotLight.position.set(-40, 60, -10);
-        spotLight.castShadow = true;
-        scene.add(spotLight);
-
-        // get the turtle
-        var points = gosper(4, 60);
+            renderer.setClearColor(new THREE.Color(0x000000, 1.0));
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMapEnabled = true;
 
 
-        var lines = new THREE.Geometry();
-        var colors = [];
-        var i = 0;
-        points.forEach(function (e) {
-            lines.vertices.push(new THREE.Vector3(e.x, e.z, e.y));
-            colors[i] = new THREE.Color(0xffffff);
-            colors[i].setHSL(e.x / 100 + 0.5, (  e.y * 20 ) / 300, 0.8);
-            i++;
-        });
+            // position and point the camera to the center of the scene
+            camera.position.x = -30;
+            camera.position.y = 40;
+            camera.position.z = 30;
+            camera.lookAt(scene.position);
 
-        lines.colors = colors;
-        var material = new THREE.LineBasicMaterial({
-            opacity: 1.0,
-            linewidth: 1,
-            vertexColors: THREE.VertexColors
-        });
+            // add subtle ambient lighting
+            var ambientLight = new THREE.AmbientLight(0x0c0c0c);
+            scene.add(ambientLight);
 
-        var line = new THREE.Line(lines, material);
-        line.position.set(25, -30, -60);
-        scene.add(line);
+            // add spotlight for the shadows
+            var spotLight = new THREE.SpotLight(0xffffff);
+            spotLight.position.set(-40, 60, -10);
+            spotLight.castShadow = true;
+            scene.add(spotLight);
 
-        // add the output of the renderer to the html element
-        document.getElementById("WebGL-output").appendChild(renderer.domElement);
+            // get the turtle
+            //var points = gosper(4, 60);
+            //points.push({x:turtle[0]},{y:turtle[1],{z:Math.sin(count)*5}})
 
-        // call the render function
-        var step = 0;
-        render();
-
-        function render() {
-            stats.update();
-            line.rotation.z = step += 0.01;
-
-            requestAnimationFrame(render);
-            renderer.render(scene, camera);
-        }
-
-        function gosper(a, b) {
-
-            var turtle = [0, 0, 0];
+            //create one segment
+            // var points=[];
+            // points.push({x:0,y:0,z:0});
+            // points.push({x:9,y:0,z:0});
             var points = [];
-            var count = 0;
+            points.push({ x: 0, y: 0, z: 0 });//v0
+            points.push({ x: 3, y: 0, z: 0 });//v10
+            points.push({ x: 4.5, y: 1.5 * Math.sqrt(3), z: 0 });//v12
+            points.push({ x: 6, y: 0, z: 0 });//v11
+            points.push({ x: 9, y: 0, z: 0 });//v11
 
-            rg(a, b, turtle);
+            var line = getLine(points);
 
+            scene.add(line);
 
-            return points;
+            // add the output of the renderer to the html element
+            document.getElementById("WebGL-output").appendChild(renderer.domElement);
 
-            function rt(x) {
-                turtle[2] += x;
-            }
+            // call the render function
+            var step = 0;
+            render();
 
-            function lt(x) {
-                turtle[2] -= x;
-            }
+            function createKockCurve(v0, v1, n) {
+                if (n <= 1) {
+                    var points = [];
+                    points.push({ x: v0, y: v0.y, z: v0.z });
+                    points.push({ x: v1.x, y: v1.y, z: v1.z });
+                    //or
+                    //points.push(v0);
+                    // points.push(v1);
 
-            function fd(dist) {
-//                ctx.beginPath();
-                points.push({x: turtle[0], y: turtle[1], z: Math.sin(count) * 5});
-//                ctx.moveTo(turtle[0], turtle[1]);
-
-                var dir = turtle[2] * (Math.PI / 180);
-                turtle[0] += Math.cos(dir) * dist;
-                turtle[1] += Math.sin(dir) * dist;
-
-                points.push({x: turtle[0], y: turtle[1], z: Math.sin(count) * 5});
-//                ctx.lineTo(turtle[0], turtle[1]);
-//                ctx.stroke();
-
-            }
-
-            function rg(st, ln, turtle) {
-
-                st--;
-                ln = ln / 2.6457;
-                if (st > 0) {
-//                    ctx.strokeStyle = '#111';
-                    rg(st, ln, turtle);
-                    rt(60);
-                    gl(st, ln, turtle);
-                    rt(120);
-                    gl(st, ln, turtle);
-                    lt(60);
-                    rg(st, ln, turtle);
-                    lt(120);
-                    rg(st, ln, turtle);
-                    rg(st, ln, turtle);
-                    lt(60);
-                    gl(st, ln, turtle);
-                    rt(60);
-                }
-                if (st == 0) {
-                    fd(ln);
-                    rt(60);
-                    fd(ln);
-                    rt(120);
-                    fd(ln);
-                    lt(60);
-                    fd(ln);
-                    lt(120);
-                    fd(ln);
-                    fd(ln);
-                    lt(60);
-                    fd(ln);
-                    rt(60)
+                    //var line = getLine(points);\
+                    var segment=getSegment(v0,d,0);
+                    scene.add(line);
+                } else {
+                    var d1 = defaultStatus / 3;
+                    var seg1= getSegment(v0,d,0);
+                    var v10=seg1.v1;
+                    createKockCurve(v0,v10,)
+                    // var v10 = new THREE.Vector3((1 - a) * v0.x + a * v1.x, (1 - a) * v0.y + a * v1.y, (1 - a) * v0.z + a * v1.z);
+                    // var v12 = new THREE.Vector3((v0.x + v1.x) / 2);
+                    // var a = 2 / 3;
+                    // var v11 = new THREE.Vector3((1-a)*v0.x+a*v1.x,(1-))
                 }
             }
+            function render() {
+                stats.update();
+                line.rotation.z = step += 0.01;
 
-            function gl(st, ln, turtle) {
-                st--;
-                ln = ln / 2.6457;
-                if (st > 0) {
-//                    ctx.strokeStyle = '#555';
-                    lt(60);
-                    rg(st, ln, turtle);
-                    rt(60);
-                    gl(st, ln, turtle);
-                    gl(st, ln, turtle);
-                    rt(120);
-                    gl(st, ln, turtle);
-                    rt(60);
-                    rg(st, ln, turtle);
-                    lt(120);
-                    rg(st, ln, turtle);
-                    lt(60);
-                    gl(st, ln, turtle);
+                requestAnimationFrame(render);
+                renderer.render(scene, camera);
+            }
+            function getLine(parms, px, py, pz, rz) {
+                px = px || 0;
+                py = py || 0;
+                pz = pz || 0;
+                rz = rz || 0;
+                var lines = new THREE.Geometry();
+                var colors = [];
+                var i = 0;
+                points.forEach(function (e) {
+                    lines.vertices.push(new THREE.Vector3(e.x, e.z, e.y));
+                    colors[i] = new THREE.Color(0xffffff);
+                    colors[i].setHSL(e.x / 100 + 0.5, (e.y * 20) / 300, 0.8);
+                    i++;
+                });
+
+                lines.colors = colors;
+                var material = new THREE.LineBasicMaterial({
+                    opacity: 1.0,
+                    linewidth: 1,
+                    vertexColors: THREE.VertexColors
+                });
+
+                var line = new THREE.Line(lines, material);
+                line.position.set(25, -30, -60);
+                return line;
+            }
+            function gosper(a, b) {
+
+                var turtle = [0, 0, 0];
+                var points = [];
+                var count = 0;
+
+                rg(a, b, turtle);
+
+
+                return points;
+
+                function rt(x) {
+                    turtle[2] += x;
                 }
-                if (st == 0) {
-                    lt(60);
-                    fd(ln);
-                    rt(60);
-                    fd(ln);
-                    fd(ln);
-                    rt(120);
-                    fd(ln);
-                    rt(60);
-                    fd(ln);
-                    lt(120);
-                    fd(ln);
-                    lt(60);
-                    fd(ln);
+
+                function lt(x) {
+                    turtle[2] -= x;
+                }
+
+                function fd(dist) {
+                    //                ctx.beginPath();
+                    points.push({ x: turtle[0], y: turtle[1], z: Math.sin(count) * 5 });
+                    //                ctx.moveTo(turtle[0], turtle[1]);
+
+                    var dir = turtle[2] * (Math.PI / 180);
+                    turtle[0] += Math.cos(dir) * dist;
+                    turtle[1] += Math.sin(dir) * dist;
+
+                    points.push({ x: turtle[0], y: turtle[1], z: Math.sin(count) * 5 });
+                    //                ctx.lineTo(turtle[0], turtle[1]);
+                    //                ctx.stroke();
+
+                }
+
+                function rg(st, ln, turtle) {
+
+                    st--;
+                    ln = ln / 2.6457;
+                    if (st > 0) {
+                        //                    ctx.strokeStyle = '#111';
+                        rg(st, ln, turtle);
+                        rt(60);
+                        gl(st, ln, turtle);
+                        rt(120);
+                        gl(st, ln, turtle);
+                        lt(60);
+                        rg(st, ln, turtle);
+                        lt(120);
+                        rg(st, ln, turtle);
+                        rg(st, ln, turtle);
+                        lt(60);
+                        gl(st, ln, turtle);
+                        rt(60);
+                    }
+                    if (st == 0) {
+                        fd(ln);
+                        rt(60);
+                        fd(ln);
+                        rt(120);
+                        fd(ln);
+                        lt(60);
+                        fd(ln);
+                        lt(120);
+                        fd(ln);
+                        fd(ln);
+                        lt(60);
+                        fd(ln);
+                        rt(60)
+                    }
+                }
+
+                function gl(st, ln, turtle) {
+                    st--;
+                    ln = ln / 2.6457;
+                    if (st > 0) {
+                        //                    ctx.strokeStyle = '#555';
+                        lt(60);
+                        rg(st, ln, turtle);
+                        rt(60);
+                        gl(st, ln, turtle);
+                        gl(st, ln, turtle);
+                        rt(120);
+                        gl(st, ln, turtle);
+                        rt(60);
+                        rg(st, ln, turtle);
+                        lt(120);
+                        rg(st, ln, turtle);
+                        lt(60);
+                        gl(st, ln, turtle);
+                    }
+                    if (st == 0) {
+                        lt(60);
+                        fd(ln);
+                        rt(60);
+                        fd(ln);
+                        fd(ln);
+                        rt(120);
+                        fd(ln);
+                        rt(60);
+                        fd(ln);
+                        lt(120);
+                        fd(ln);
+                        lt(60);
+                        fd(ln);
+                    }
                 }
             }
-        }
 
-        function initStats() {
+            function initStats() {
 
-            var stats = new Stats();
+                var stats = new Stats();
 
-            stats.setMode(0); // 0: fps, 1: ms
+                stats.setMode(0); // 0: fps, 1: ms
 
-            // Align top-left
-            stats.domElement.style.position = 'absolute';
-            stats.domElement.style.left = '0px';
-            stats.domElement.style.top = '0px';
+                // Align top-left
+                stats.domElement.style.position = 'absolute';
+                stats.domElement.style.left = '0px';
+                stats.domElement.style.top = '0px';
 
-            document.getElementById("Stats-output").appendChild(stats.domElement);
+                document.getElementById("Stats-output").appendChild(stats.domElement);
 
-            return stats;
-        }
-    };
+                return stats;
+            }
+        };
 
-    window.onload = init;
+        window.onload = init;
 
 
-</script>
+    </script>
 </body>
+
 </html>
