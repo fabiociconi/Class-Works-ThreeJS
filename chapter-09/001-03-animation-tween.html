@@ -3,7 +3,7 @@
 <html>
 
 <head>
-    <title>Example 09.03 - Animation tween </title>
+    <title>cw apr.16th - Animation tween </title>
     <script type="text/javascript" src="../libs/three.js"></script>
     <script type="text/javascript" src="../libs/PLYLoader.js"></script>
 
@@ -78,7 +78,7 @@
         // create a tween
         // http://sole.github.io/tween.js/examples/03_graphs.html
         var posSrc = {pos: 1};
-        var tween = new TWEEN.Tween(posSrc).to({pos: 0}, 5000);
+        var tween = new TWEEN.Tween(posSrc).to({pos: 0}, 10000);
         tween.easing(TWEEN.Easing.Sinusoidal.InOut);
 
         var tweenBack = new TWEEN.Tween(posSrc).to({pos: 1}, 5000);
@@ -94,7 +94,8 @@
 
             loadedGeometry.vertices.forEach(function (e) {
                 var newY = ((e.y + 3.22544) * pos) - 3.22544;
-                pointCloud.geometry.vertices[count++].set(e.x, newY, e.z);
+                var newX = ((e.x + 3.22544) * pos) - 3.22544;
+                pointCloud.geometry.vertices[count++].set(newX, newY, e.z);
             });
 
             pointCloud.sortParticles = true;
